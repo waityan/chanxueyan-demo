@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>产学研参访 Pro - 增强体验版（含社区）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-soft: #eff6ff;
+            --bg-main: #f8fafc;
+        }
+
+        body {
+            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .phone-frame {
+            max-width: 414px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+
+        .safe-area-bottom { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        @keyframes fadeInPage {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page-animate { animation: fadeInPage 0.25s ease-out forwards; }
+        .btn-press:active { transform: scale(0.96); transition: transform 0.1s; }
+        .card-shadow { box-shadow: 0 10px 30px -5px rgba(0,0,0,0.04); }
+        .nav-active { color: var(--primary); font-weight: 800; }
+
+        .route-line {
+            position: absolute;
+            left: 20px;
+            top: 30px;
+            bottom: 10px;
+            border-left: 2px dashed #e2e8f0;
+        }
+
+        .subpage-gradient {
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+        }
+
+        .detail-hero {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .detail-hero::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 90px;
+            background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 72%, #ffffff 100%);
+            pointer-events: none;
+        }
+
+        .detail-panel {
+            position: relative;
+            z-index: 10;
+            margin-top: -22px;
+        }
+
+        .floating-shell {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(100%, 414px);
+            z-index: 60;
+        }
+
+        .floating-back {
+            top: calc(2.75rem + env(safe-area-inset-top));
+            padding: 0 1.25rem;
+            pointer-events: none;
+        }
+
+        .floating-back button {
+            pointer-events: auto;
+        }
+
+        .floating-action {
+            bottom: 0;
+        }
+
+        /* 社区模块样式 */
+        .post-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+            padding: 1.25rem;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 1rem;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .post-meta {
+            flex: 1;
+        }
+
+        .post-author {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 0.875rem;
+        }
+
+        .post-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-top: 0.125rem;
+        }
+
+        .post-tag {
+            font-size: 0.625rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .post-content {
+            color: #334155;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .post-images {
+            display: grid;
+            gap: 0.5rem;
+            margin: 0.75rem 0;
+        }
+
+        .post-images.grid-1 {
+            grid-template-columns: 1fr;
+        }
+
+        .post-images.grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .post-images.grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .post-image {
+            width: 100%;
+            border-radius: 0.75rem;
+            object-fit: cover;
+            aspect-ratio: 16/9;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 1.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            color: var(--primary);
+        }
+
+        .action-btn.liked {
+            color: #ef4444;
+        }
+
+        .action-btn i {
+            font-size: 1rem;
+        }
+
+        /* 浮窗发帖按钮 */
+        .fab-post {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
+            cursor: pointer;
+            z-index: 55;
+            transition: all 0.2s;
+        }
+
+        .fab-post:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .fab-post:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        /* 话题标签 */
+        .topic-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .topic-pill.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .topic-pill:hover {
+            background: #e2e8f0;
+        }
+
+        .topic-pill.active:hover {
+            background: #1d4ed8;
+        }
+
+        /* 评论区域 */
+        .comment-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 0.75rem;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .comment-text {
+            color: #475569;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .comment-time {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .comment-input-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(100%, 414px);
+            background: white;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 60;
+        }
+
+        .comment-input {
+            flex: 1;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .comment-input:focus {
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .comment-submit {
+            background: var(--primary);
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .comment-submit:active {
+            transform: scale(0.96);
+        }
+
+        /* ===== 新增功能样式 ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 80;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content {
+            width: min(100%, 414px);
+            background: white;
+            border-radius: 2rem 2rem 0 0;
+            padding: 2rem 1.5rem;
+            padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+            animation: slideUp 0.25s ease-out;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-full {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 80;
+            animation: fadeInPage 0.2s ease-out forwards;
+            overflow-y: auto;
+        }
+
+        .search-input {
+            width: 100%;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 1.5rem;
+            padding: 0.875rem 1.25rem;
+            font-size: 0.95rem;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            background: white;
+            box-shadow: 0 0 0 2px #2563eb, 0 8px 24px rgba(37,99,235,0.12);
+        }
+
+        .search-tag {
+            display: inline-flex;
+            padding: 0.375rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .search-tag.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+        }
+
+        .search-result-item:active {
+            opacity: 0.7;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.125rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-switch {
+            width: 48px;
+            height: 28px;
+            border-radius: 14px;
+            background: #e2e8f0;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-switch.on {
+            background: #2563eb;
+        }
+
+        .toggle-switch::after {
+            content: "";
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .toggle-switch.on::after {
+            left: 22px;
+        }
+
+        .post-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .post-menu-btn:active {
+            background: #f1f5f9;
+        }
+
+        .post-menu-btn.danger {
+            color: #ef4444;
+        }
+
+        .create-post-textarea {
+            width: 100%;
+            min-height: 140px;
+            border: none;
+            background: #f8fafc;
+            border-radius: 1.25rem;
+            padding: 1rem 1.25rem;
+            font-size: 0.95rem;
+            color: #1e293b;
+            outline: none;
+            resize: none;
+            line-height: 1.6;
+            font-family: inherit;
+        }
+
+        .create-post-textarea:focus {
+            background: white;
+            box-shadow: 0 0 0 2px #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-slate-200">
+
+    <div id="app" class="phone-frame flex flex-col overflow-hidden">
+        <div id="view-container" class="flex-1 overflow-y-auto hide-scrollbar bg-[#fbfcfd] pb-24"></div>
+
+        <nav id="bottom-nav" class="fixed bottom-0 max-w-[414px] w-full glass-header border-t border-slate-100 flex justify-around py-3 safe-area-bottom z-50">
+            <button onclick="switchTab('home')" class="nav-item flex flex-col items-center gap-1 text-slate-400 transition-all" id="nav-home">
+                <i class="fa-solid fa-house-chimney text-xl"></i>
+                <span class="text-[10px]">首页</span>
+            </button>
+            <button onclick="switchTab('community')" class="nav-item flex flex-col items-center gap-1 text-slate-400 transition-all" id="nav-community">
+                <i class="fa-solid fa-users text-xl"></i>
+                <span class="text-[10px]">社区</span>
+            </button>
+            <button onclick="switchTab('jobs')" class="nav-item flex flex-col items-center gap-1 text-slate-400 transition-all" id="nav-jobs">
+                <i class="fa-solid fa-compass text-xl"></i>
+                <span class="text-[10px]">职位</span>
+            </button>
+            <button onclick="switchTab('mine')" class="nav-item flex flex-col items-center gap-1 text-slate-400 transition-all" id="nav-mine">
+                <i class="fa-solid fa-circle-user text-xl"></i>
+                <span class="text-[10px]">我的</span>
+            </button>
+        </nav>
+
+        <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/90 text-white px-6 py-3 rounded-full text-sm font-medium hidden z-[100] shadow-2xl"></div>
+    </div>
+
+    <script>
+        const MOCK_DATA = {
+            activities: [
+                {
+                    id: 101,
+                    title: '大湾区黑科技探秘之旅',
+                    city: '深圳',
+                    date: '07月12日',
+                    price: 399,
+                    tag: '热门路线',
+                    summary: '串联无人机、互联网和机器人企业，适合想快速建立科技行业认知的学生。',
+                    image: './demo-enhanced-assets/route-bay.jpg',
+                    companies: [
+                        {
+                            name: 'DJI 大疆',
+                            intro: '重点参观消费级无人机与影像产品展区，了解研发团队如何协作完成从概念到量产的落地。',
+                            focus: '产品研发流程',
+                            duration: '09:30 - 11:00'
+                        },
+                        {
+                            name: '腾讯',
+                            intro: '围绕校招岗位和业务线认知展开分享，补齐大厂产品、运营、技术岗位的职责差异。',
+                            focus: '岗位认知分享',
+                            duration: '13:30 - 15:00'
+                        },
+                        {
+                            name: '优必选',
+                            intro: '近距离观察人形机器人展示与企业创新案例，理解硬件、算法和场景应用之间的连接方式。',
+                            focus: '机器人场景应用',
+                            duration: '15:30 - 17:00'
+                        }
+                    ]
+                },
+                {
+                    id: 102,
+                    title: '魔都自动驾驶与新能源行',
+                    city: '上海',
+                    date: '07月18日',
+                    price: 450,
+                    tag: '深度调研',
+                    summary: '覆盖自动驾驶、智能座舱与新能源制造链条，适合想进入汽车产业的同学。',
+                    image: './demo-enhanced-assets/job-algorithm.jpg',
+                    companies: [
+                        {
+                            name: 'Tesla',
+                            intro: '从品牌体验与门店顾问视角切入，理解新能源产品的用户沟通逻辑和销售链路。',
+                            focus: '用户体验与产品展示',
+                            duration: '10:00 - 11:30'
+                        },
+                        {
+                            name: '蔚来',
+                            intro: '围绕用户社区、智能座舱和服务体系展开交流，帮助学生理解新势力企业的差异化能力。',
+                            focus: '用户运营与智能座舱',
+                            duration: '13:30 - 15:00'
+                        },
+                        {
+                            name: '上汽集团',
+                            intro: '进入汽车产业链视角，理解整车制造、智能工厂和校招岗位的实际需求。',
+                            focus: '整车制造流程',
+                            duration: '15:30 - 17:30'
+                        }
+                    ]
+                }
+            ],
+            courses: [
+                {
+                    id: 301,
+                    title: 'AI 时代下的产品思维升级',
+                    teacher: '腾讯资深导师',
+                    price: 99,
+                    image: './demo-enhanced-assets/course-ai.jpg',
+                    summary: '帮助学生建立技术趋势、产品洞察和需求分析的底层框架。',
+                    suitable: '适合对产品经理、运营、AI 应用方向感兴趣的同学。',
+                    sections: ['行业趋势判断', '需求拆解方法', 'AI 产品案例分析', '活动参访提问模板']
+                },
+                {
+                    id: 302,
+                    title: '从 0 到 1 掌握大厂面试技巧',
+                    teacher: '大疆 HR 专家',
+                    price: 0,
+                    image: './demo-enhanced-assets/course-interview.jpg',
+                    summary: '从简历表达、项目讲述到常见面试追问，帮学生把准备做得更完整。',
+                    suitable: '适合准备暑期实习和秋招的学生。',
+                    sections: ['简历结构优化', '项目经历表达', '群面常见问题', '一对一面试追问']
+                }
+            ],
+            jobs: [
+                {
+                    id: 201,
+                    title: '自动驾驶算法实习生',
+                    company: '小鹏汽车',
+                    salary: '200-350/天',
+                    city: '广州',
+                    type: '实习',
+                    tags: ['Python', '感知算法'],
+                    image: './demo-enhanced-assets/job-algorithm.jpg',
+                    summary: '参与感知算法验证、数据标注分析和自动驾驶场景迭代。',
+                    companyIntro: '小鹏汽车持续投入自动驾驶和智能座舱能力建设，适合对智能出行有兴趣的学生进入一线团队学习。',
+                    responsibilities: ['协助搭建数据分析流程', '参与测试集清洗与效果复盘', '整理场景问题并协同算法工程师优化'],
+                    requirements: ['计算机或相关专业', '熟悉 Python 基础', '对自动驾驶方向有明确兴趣']
+                },
+                {
+                    id: 202,
+                    title: '品牌公关助理',
+                    company: '字节跳动',
+                    salary: '15k-25k',
+                    city: '北京',
+                    type: '全职',
+                    tags: ['传媒学', '英语流利'],
+                    image: './demo-enhanced-assets/job-pr.jpg',
+                    summary: '协助品牌传播、内容策划和活动执行，支持大型项目对外沟通。',
+                    companyIntro: '字节跳动具备高节奏内容传播场景，适合希望进入品牌、公关和内容运营方向的学生积累项目经验。',
+                    responsibilities: ['撰写品牌传播素材', '支持线下活动执行与复盘', '参与媒体沟通和舆情跟进'],
+                    requirements: ['传媒、公关、新闻等相关背景优先', '文字能力强', '沟通和执行能力稳定']
+                }
+            ],
+            posts: [
+                {
+                    id: 1,
+                    author: '张明',
+                    avatar: 'Z',
+                    time: '2小时前',
+                    content: '刚参加了大湾区黑科技探秘之旅，收获满满！大疆的研发流程讲解非常详细，腾讯的校招分享让我对职业规划有了更清晰的认识。强烈推荐给想进科技公司的同学们！',
+                    images: ['./demo-enhanced-assets/route-bay.jpg'],
+                    tags: ['参访分享', '大湾区'],
+                    likes: 23,
+                    comments: 8,
+                    liked: false,
+                    commentsList: [
+                        { author: '刘同学', avatar: '刘', content: '太赞了！感谢分享', time: '1小时前' },
+                        { author: '赵同学', avatar: '赵', content: '我也参加了，确实收获很大', time: '2小时前' }
+                    ]
+                },
+                {
+                    id: 2,
+                    author: '李婷',
+                    avatar: 'L',
+                    time: '5小时前',
+                    content: '有没有一起参加7月18日上海自动驾驶行的伙伴？想找一个同行的伙伴，可以一起交流学习。',
+                    images: [],
+                    tags: ['组队', '上海'],
+                    likes: 12,
+                    comments: 15,
+                    liked: true,
+                    commentsList: [
+                        { author: '孙同学', avatar: '孙', content: '求组队联系方式', time: '3小时前' }
+                    ]
+                },
+                {
+                    id: 3,
+                    author: '王强',
+                    avatar: 'W',
+                    time: '1天前',
+                    content: '分享一个面试小技巧：在面试前一定要做足功课，了解公司的业务线和近期动态。我用这个方法成功拿到了字节的实习offer！',
+                    images: ['./demo-enhanced-assets/job-pr.jpg', './demo-enhanced-assets/course-interview.jpg'],
+                    tags: ['面试经验', '求职'],
+                    likes: 56,
+                    comments: 23,
+                    liked: false,
+                    commentsList: []
+                },
+                {
+                    id: 4,
+                    author: '陈小雪',
+                    avatar: 'C',
+                    time: '2天前',
+                    content: '上完AI产品思维课程，收获真的很大！老师讲的需求拆解框架我已经在项目里用起来了，效果很好。希望以后还能有更多这样的课程。',
+                    images: [],
+                    tags: ['课程评价', '产品思维'],
+                    likes: 34,
+                    comments: 11,
+                    liked: false,
+                    commentsList: []
+                }
+            ],
+            user: {
+                name: '陈小希',
+                school: '华南理工大学',
+                major: '计算机工程'
+            }
+        };
+
+        const STATE = {
+            currentTab: 'home',
+            currentPost: null,
+            communityFilter: 'all',
+            jobFilter: 'all'
+        };
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            clearTimeout(showToast.timer);
+            showToast.timer = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 1600);
+        }
+
+        function setNav(tab) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
+            const nav = document.getElementById(`nav-${tab}`);
+            if (nav) nav.classList.add('nav-active');
+        }
+
+        function setView(html, options = {}) {
+            const { showNav = true, activeTab = STATE.currentTab } = options;
+            const container = document.getElementById('view-container');
+            container.classList.remove('page-animate');
+            void container.offsetWidth;
+            container.classList.add('page-animate');
+            container.innerHTML = html;
+            document.getElementById('bottom-nav').style.display = showNav ? 'flex' : 'none';
+            if (showNav) setNav(activeTab);
+        }
+
+        function switchTab(tab) {
+            STATE.currentTab = tab;
+            if (tab === 'home') renderHome();
+            if (tab === 'community') renderCommunity();
+            if (tab === 'jobs') renderJobs();
+            if (tab === 'mine') renderMine();
+        }
+
+        function getBackAction(source) {
+            if (source === 'routes') return 'renderRoutes()';
+            if (source === 'courses') return 'renderCourses()';
+            if (source === 'jobs') return 'renderJobs()';
+            if (source === 'community') return 'renderCommunity()';
+            if (source === 'post-detail') return `renderPostDetail(${STATE.currentPost})`;
+            return "switchTab('home')";
+        }
+
+        function renderSubHeader(title, subtitle, backAction) {
+            return `
+                <div class="h-10"></div>
+                <header class="px-6 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button onclick="${backAction}" class="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-700 btn-press border border-slate-50">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <div>
+                            <h2 class="text-xl font-black text-slate-900">${title}</h2>
+                            <p class="text-[11px] text-slate-400 font-bold mt-0.5">${subtitle}</p>
+                        </div>
+                    </div>
+                </header>
+            `;
+        }
+
+        function renderFloatingBackButton(backAction) {
+            return `
+                <div class="floating-shell floating-back">
+                    <button onclick="${backAction}" class="w-10 h-10 rounded-full glass-header flex items-center justify-center shadow-lg border border-white/20">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderFixedActionBar(content) {
+            return `
+                <div class="floating-shell floating-action">
+                    ${content}
+                </div>
+            `;
+        }
+
+        // ============ 社区模块函数 ============
+
+        function renderCommunity() {
+            const filter = STATE.communityFilter;
+            const filteredPosts = filter === 'all'
+                ? MOCK_DATA.posts
+                : MOCK_DATA.posts.filter(post => post.tags.includes(filter));
+
+            setView(`
+                <div class="h-12"></div>
+                <header class="px-6 mb-6">
+                    <h2 class="text-2xl font-black text-slate-900">同学社区</h2>
+                    <p class="text-xs text-slate-400 font-bold mt-1">分享你的产学研故事</p>
+                </header>
+
+                <!-- 话题筛选 -->
+                <div class="px-6 mb-6">
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar">
+                        <button onclick="filterCommunity('all')" class="topic-pill ${filter === 'all' ? 'active' : ''}">
+                            <i class="fa-solid fa-fire"></i>
+                            全部
+                        </button>
+                        <button onclick="filterCommunity('参访分享')" class="topic-pill ${filter === '参访分享' ? 'active' : ''}">
+                            <i class="fa-solid fa-binoculars"></i>
+                            参访分享
+                        </button>
+                        <button onclick="filterCommunity('面试经验')" class="topic-pill ${filter === '面试经验' ? 'active' : ''}">
+                            <i class="fa-solid fa-file-contract"></i>
+                            面试经验
+                        </button>
+                        <button onclick="filterCommunity('课程评价')" class="topic-pill ${filter === '课程评价' ? 'active' : ''}">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                            课程评价
+                        </button>
+                        <button onclick="filterCommunity('组队')" class="topic-pill ${filter === '组队' ? 'active' : ''}">
+                            <i class="fa-solid fa-user-group"></i>
+                            组队
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 帖子列表 -->
+                <div class="px-6 space-y-4 pb-4">
+                    ${filteredPosts.map(post => renderPostCard(post)).join('')}
+                </div>
+
+                <!-- 浮窗发帖按钮 -->
+                <div class="fab-post" onclick="showCreatePostModal()">
+                    <i class="fa-solid fa-pen text-xl"></i>
+                </div>
+            `, { showNav: true, activeTab: 'community' });
+        }
+
+        function filterCommunity(tag) {
+            STATE.communityFilter = tag;
+            renderCommunity();
+        }
+
+        function renderPostCard(post) {
+            const imageGrid = post.images.length === 0 ? '' :
+                post.images.length === 1 ? 'grid-1' :
+                post.images.length === 2 ? 'grid-2' : 'grid-3';
+
+            return `
+                <div class="post-card btn-press" onclick="renderPostDetail(${post.id})">
+                    <div class="post-header">
+                        <div class="avatar-small">${post.avatar}</div>
+                        <div class="post-meta">
+                            <div class="post-author">${post.author}</div>
+                            <div class="post-time">${post.time}</div>
+                        </div>
+                        <span class="post-tag">${post.tags[0]}</span>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                    ${post.images.length > 0 ? `
+                        <div class="post-images ${imageGrid}">
+                            ${post.images.map(img => `<img src="${img}" class="post-image" loading="lazy">`).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="post-actions">
+                        <div class="action-btn ${post.liked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike(${post.id})">
+                            <i class="fa-solid fa-heart"></i>
+                            <span>${post.likes}</span>
+                        </div>
+                        <div class="action-btn">
+                            <i class="fa-solid fa-comment"></i>
+                            <span>${post.comments}</span>
+                        </div>
+                        <div class="action-btn">
+                            <i class="fa-solid fa-share-nodes"></i>
+                            <span>分享</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPostDetail(postId) {
+            STATE.currentPost = postId;
+            const post = MOCK_DATA.posts.find(p => p.id === postId);
+
+            setView(`
+                ${renderFloatingBackButton("renderCommunity()")}
+                <div class="bg-white min-h-screen page-animate pb-32">
+                    <div class="p-6">
+                        <!-- 帖子头部 -->
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="avatar-small">${post.avatar}</div>
+                            <div class="flex-1">
+                                <div class="font-black text-slate-800 text-sm">${post.author}</div>
+                                <div class="text-xs text-slate-400 font-bold">${post.time}</div>
+                            </div>
+                            <button class="text-slate-400 text-sm font-bold" onclick="showPostMenu(${post.id})">
+                                <i class="fa-solid fa-ellipsis"></i>
+                            </button>
+                        </div>
+
+                        <!-- 帖子内容 -->
+                        <div class="text-slate-700 leading-relaxed mb-4">
+                            ${post.content}
+                        </div>
+
+                        <!-- 标签 -->
+                        <div class="flex gap-2 mb-4">
+                            ${post.tags.map(tag => `
+                                <span class="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full">
+                                    #${tag}
+                                </span>
+                            `).join('')}
+                        </div>
+
+                        <!-- 图片 -->
+                        ${post.images.length > 0 ? `
+                            <div class="grid gap-2 mb-6 ${
+                                post.images.length === 1 ? 'grid-cols-1' :
+                                post.images.length === 2 ? 'grid-cols-2' :
+                                'grid-cols-3'
+                            }">
+                                ${post.images.map(img => `
+                                    <img src="${img}" class="w-full rounded-xl object-cover aspect-square">
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <!-- 互动统计 -->
+                        <div class="flex items-center gap-6 py-4 border-t border-slate-100 mb-4">
+                            <div class="flex items-center gap-4">
+                                <button class="flex items-center gap-2 ${post.liked ? 'text-red-500' : 'text-slate-400'}" onclick="toggleLike(${post.id}); renderPostDetail(${post.id})">
+                                    <i class="fa-solid fa-heart text-lg"></i>
+                                    <span class="text-sm font-bold">${post.likes}</span>
+                                </button>
+                                <div class="flex items-center gap-2 text-slate-400">
+                                    <i class="fa-regular fa-comment text-lg"></i>
+                                    <span class="text-sm font-bold">${post.comments}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-400">
+                                <i class="fa-solid fa-share-nodes text-lg"></i>
+                                <span class="text-sm font-bold">分享</span>
+                            </div>
+                        </div>
+
+                        <!-- 评论区 -->
+                        <div class="border-t border-slate-100 pt-4">
+                            <h3 class="font-black text-slate-800 mb-4">评论 (${post.comments})</h3>
+                            <div id="comments-list" class="space-y-4 mb-4">
+                                <!-- 评论列表 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 评论输入框 -->
+                <div class="comment-input-wrapper">
+                    <input type="text" class="comment-input" id="comment-input" placeholder="说点什么吧...">
+                    <button class="comment-submit" onclick="submitComment(${post.id})">发送</button>
+                </div>
+            `, { showNav: false });
+
+            renderComments(postId);
+        }
+
+        function renderComments(postId) {
+            const post = MOCK_DATA.posts.find(p => p.id === postId);
+            if (!post) return;
+            const commentsList = document.getElementById('comments-list');
+            if (commentsList) {
+                commentsList.innerHTML = (post.commentsList || []).map(comment => `
+                    <div class="comment-item">
+                        <div class="comment-avatar">${comment.avatar}</div>
+                        <div class="comment-content">
+                            <div class="comment-author">${comment.author}</div>
+                            <div class="comment-text">${comment.content}</div>
+                            <div class="comment-time">${comment.time}</div>
+                        </div>
+                    </div>
+                `).join('') || '<div class="text-center text-slate-400 text-sm py-8 font-bold">暂无评论，来说点什么吧</div>';
+            }
+        }
+
+        function toggleLike(postId) {
+            const post = MOCK_DATA.posts.find(p => p.id === postId);
+            if (post) {
+                if (post.liked) {
+                    post.likes--;
+                    post.liked = false;
+                } else {
+                    post.likes++;
+                    post.liked = true;
+                }
+                showToast(post.liked ? '已点赞' : '取消点赞');
+            }
+        }
+
+        function submitComment(postId) {
+            const input = document.getElementById('comment-input');
+            const text = input.value.trim();
+            if (!text) {
+                showToast('请输入评论内容');
+                return;
+            }
+            const post = MOCK_DATA.posts.find(p => p.id === postId);
+            if (post) {
+                if (!post.commentsList) post.commentsList = [];
+                post.commentsList.push({
+                    author: MOCK_DATA.user.name,
+                    avatar: MOCK_DATA.user.name.slice(0, 1),
+                    content: text,
+                    time: '刚刚'
+                });
+                post.comments = post.commentsList.length;
+                showToast('评论已发送');
+                input.value = '';
+                renderComments(postId);
+            }
+        }
+
+        function showCreatePostModal() {
+            const tags = ['参访分享', '面试经验', '课程评价', '组队'];
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-black text-slate-900">发布帖子</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 btn-press">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <textarea class="create-post-textarea mb-4" id="create-post-content" placeholder="分享你的产学研故事..."></textarea>
+                    <div class="mb-6">
+                        <p class="text-xs font-bold text-slate-500 mb-3">选择话题标签</p>
+                        <div class="flex gap-2 flex-wrap" id="create-post-tags">
+                            ${tags.map(t => `<button onclick="toggleCreateTag(this)" class="topic-pill">${t}</button>`).join('')}
+                        </div>
+                    </div>
+                    <button onclick="doCreatePost()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-blue-100 btn-press">
+                        发布帖子
+                    </button>
+                </div>
+            `;
+            document.getElementById('app').appendChild(modal);
+            setTimeout(() => document.getElementById('create-post-content').focus(), 300);
+        }
+
+        function toggleCreateTag(btn) {
+            btn.classList.toggle('active');
+        }
+
+        function doCreatePost() {
+            const content = document.getElementById('create-post-content').value.trim();
+            if (!content) {
+                showToast('请输入帖子内容');
+                return;
+            }
+            const tagBtns = document.querySelectorAll('#create-post-tags .topic-pill.active');
+            const selectedTags = Array.from(tagBtns).map(b => b.textContent.trim());
+            if (selectedTags.length === 0) {
+                showToast('请选择至少一个话题标签');
+                return;
+            }
+            const newPost = {
+                id: Date.now(),
+                author: MOCK_DATA.user.name,
+                avatar: MOCK_DATA.user.name.slice(0, 1),
+                time: '刚刚',
+                content: content,
+                images: [],
+                tags: selectedTags,
+                likes: 0,
+                comments: 0,
+                liked: false,
+                commentsList: []
+            };
+            MOCK_DATA.posts.unshift(newPost);
+            document.querySelector('.modal-overlay').remove();
+            showToast('发布成功 🎉');
+            if (STATE.currentTab === 'community') renderCommunity();
+        }
+
+        // ============ 原有函数保持不变 ============
+
+        function renderActivityCard(act, source = 'home') {
+            return `
+                <div onclick="renderDetail(${act.id}, '${source}')" class="${source === 'home' ? 'min-w-[280px]' : 'w-full'} bg-white rounded-[2rem] overflow-hidden card-shadow btn-press border border-slate-50">
+                    <div class="h-40 relative">
+                        <img src="${act.image}" class="w-full h-full object-cover">
+                        <span class="absolute top-3 left-3 bg-white/90 backdrop-blur text-[10px] font-black px-2 py-1 rounded-lg text-blue-600 shadow-sm">${act.tag}</span>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-black text-slate-900 leading-tight">${act.title}</h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed mt-2">${act.summary}</p>
+                        <div class="flex flex-wrap gap-1 mt-3">
+                            ${act.companies.map(c => `<span class="bg-blue-50 text-blue-600 text-[10px] px-2 py-0.5 rounded-md font-bold">${c.name}</span>`).join('')}
+                        </div>
+                        <div class="mt-4 flex justify-between items-center pt-3 border-t border-slate-50">
+                            <span class="text-xs text-slate-400 font-bold"><i class="fa-solid fa-location-dot mr-1"></i>${act.city}</span>
+                            <span class="text-sm font-black text-slate-900">¥${act.price}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCourseCard(course, source = 'home') {
+            return `
+                <div onclick="renderCourseDetail(${course.id}, '${source}')" class="bg-white p-3 rounded-[1.5rem] flex items-center gap-4 card-shadow border border-slate-50 btn-press">
+                    <img src="${course.image}" class="w-16 h-16 rounded-xl object-cover">
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-slate-800 leading-snug">${course.title}</h4>
+                        <p class="text-[10px] text-slate-400 font-bold mt-1">${course.teacher}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-black ${course.price === 0 ? 'text-emerald-500' : 'text-slate-900'}">
+                            ${course.price === 0 ? '免费' : '¥' + course.price}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderJobCard(job) {
+            return `
+                <div onclick="renderJobDetail(${job.id})" class="bg-white p-6 rounded-[2rem] border border-slate-50 card-shadow btn-press">
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="flex-1">
+                            <h4 class="text-base font-black text-slate-800">${job.title}</h4>
+                            <p class="text-xs text-blue-600 font-bold mt-1">${job.company}</p>
+                            <p class="text-[11px] text-slate-400 leading-relaxed mt-2">${job.summary}</p>
+                        </div>
+                        <span class="text-sm font-black text-orange-500 whitespace-nowrap">${job.salary}</span>
+                    </div>
+                    <div class="flex gap-2 mt-4 flex-wrap">
+                        ${job.tags.map(t => `<span class="bg-slate-50 text-slate-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">${t}</span>`).join('')}
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center text-[10px] text-slate-400 font-bold">
+                        <span><i class="fa-solid fa-map-pin mr-1"></i>${job.city}</span>
+                        <span><i class="fa-solid fa-chevron-right mr-1"></i>查看详情</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHome() {
+            setView(`
+                <div class="h-12"></div>
+                <header class="px-6 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900">探索产学研</h2>
+                        <p class="text-xs text-slate-400 font-bold mt-0.5">连通企业与校园的深度桥梁</p>
+                    </div>
+                    <div onclick="renderSearch()" class="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-blue-600 btn-press border border-slate-50 cursor-pointer">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                </header>
+
+                <section class="mt-8">
+                    <div class="px-6 flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-black text-slate-800">参访路线</h3>
+                        <button onclick="renderRoutes()" class="text-xs font-bold text-blue-600 btn-press">更多路线</button>
+                    </div>
+                    <div class="flex overflow-x-auto hide-scrollbar gap-4 px-6">
+                        ${MOCK_DATA.activities.map(act => renderActivityCard(act, 'home')).join('')}
+                    </div>
+                </section>
+
+                <section class="mt-10 px-6">
+                    <div class="flex justify-between items-center mb-5">
+                        <h3 class="text-lg font-black text-slate-800">职场课程</h3>
+                        <button onclick="renderCourses()" class="text-xs font-bold text-blue-600 btn-press">全部课程</button>
+                    </div>
+                    <div class="space-y-4">
+                        ${MOCK_DATA.courses.map(course => renderCourseCard(course, 'home')).join('')}
+                    </div>
+                </section>
+            `, { showNav: true, activeTab: 'home' });
+        }
+
+        function renderRoutes() {
+            setView(`
+                <div class="subpage-gradient min-h-screen pb-8">
+                    ${renderSubHeader('更多路线', '查看全部参访线路', "switchTab('home')")}
+                    <section class="mt-8 px-6">
+                        <div class="space-y-5">
+                            ${MOCK_DATA.activities.map(act => renderActivityCard(act, 'routes')).join('')}
+                        </div>
+                    </section>
+                </div>
+            `, { showNav: false });
+        }
+
+        function renderCourses() {
+            setView(`
+                <div class="subpage-gradient min-h-screen pb-8">
+                    ${renderSubHeader('全部课程', '围绕认知、求职与表达能力展开', "switchTab('home')")}
+                    <section class="mt-8 px-6">
+                        <div class="space-y-4">
+                            ${MOCK_DATA.courses.map(course => renderCourseCard(course, 'courses')).join('')}
+                        </div>
+                    </section>
+                </div>
+            `, { showNav: false });
+        }
+
+        function renderDetail(id, source = 'home') {
+            const act = MOCK_DATA.activities.find(a => a.id === id);
+            setView(`
+                ${renderFloatingBackButton(getBackAction(source))}
+                <div class="bg-white min-h-screen page-animate pb-32">
+                    <div class="h-64 detail-hero">
+                        <img src="${act.image}" class="w-full h-full object-cover">
+                    </div>
+
+                    <div class="detail-panel px-6 py-8 bg-white rounded-t-[3rem] shadow-2xl">
+                        <h1 class="text-2xl font-black text-slate-900">${act.title}</h1>
+                        <p class="text-[12px] text-slate-400 leading-relaxed mt-3">${act.summary}</p>
+                        <div class="flex items-center gap-4 mt-4">
+                            <span class="text-xs text-blue-600 font-bold"><i class="fa-solid fa-calendar mr-1.5"></i>${act.date}</span>
+                            <span class="text-xs text-slate-400 font-bold"><i class="fa-solid fa-user-group mr-1.5"></i>剩余 12 名额</span>
+                        </div>
+
+                        <div class="mt-10">
+                            <h3 class="text-lg font-black text-slate-800 mb-6">参访路线</h3>
+                            <div class="relative">
+                                <div class="route-line"></div>
+                                ${act.companies.map((comp, idx) => `
+                                    <div class="flex items-start gap-6 mb-8 relative">
+                                        <div class="w-10 h-10 rounded-full bg-[#2563eb] text-white flex items-center justify-center font-black z-10 shadow-lg shadow-blue-100">
+                                            ${idx + 1}
+                                        </div>
+                                        <div class="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <h4 class="font-bold text-slate-800 text-sm">${comp.name}</h4>
+                                                    <p class="text-[10px] text-blue-600 font-bold mt-1">${comp.duration} · ${comp.focus}</p>
+                                                </div>
+                                                <span class="w-8 h-8 rounded-xl bg-white text-blue-600 flex items-center justify-center shadow-sm border border-slate-100">
+                                                    <i class="fa-solid fa-building"></i>
+                                                </span>
+                                            </div>
+                                            <p class="text-[11px] text-slate-400 mt-3 leading-relaxed">${comp.intro}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                <div class="flex items-start gap-6 relative">
+                                    <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center font-black z-10">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                    <div class="pt-2">
+                                        <h4 class="font-bold text-slate-400 text-sm">活动总结与颁证</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ${renderFixedActionBar(`
+                    <div class="bg-white p-6 pb-10 border-t flex justify-between items-center">
+                        <span class="text-2xl font-black text-slate-900">¥${act.price}</span>
+                        <button onclick="showConfirmModal('报名确认', '确认报名「${act.title}」吗？', function() { showToast('报名成功 🎉'); })" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">立即报名</button>
+                    </div>
+                `)}
+            `, { showNav: false });
+        }
+
+        function renderCourseDetail(id, source = 'home') {
+            const course = MOCK_DATA.courses.find(c => c.id === id);
+            setView(`
+                ${renderFloatingBackButton(getBackAction(source))}
+                <div class="bg-white min-h-screen page-animate pb-32">
+                    <div class="h-60 detail-hero bg-slate-50">
+                        <img src="${course.image}" class="w-full h-full object-cover">
+                    </div>
+
+                    <div class="detail-panel px-6 py-8 bg-white rounded-t-[3rem] shadow-2xl">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h1 class="text-2xl font-black text-slate-900 leading-tight">${course.title}</h1>
+                                <p class="text-xs text-slate-400 font-bold mt-2">${course.teacher}</p>
+                            </div>
+                            <span class="text-lg font-black ${course.price === 0 ? 'text-emerald-500' : 'text-slate-900'}">
+                                ${course.price === 0 ? '免费' : '¥' + course.price}
+                            </span>
+                        </div>
+                        <p class="text-[12px] text-slate-400 leading-relaxed mt-4">${course.summary}</p>
+
+                        <div class="mt-8 bg-blue-50/60 rounded-[1.6rem] p-5 border border-blue-100">
+                            <h3 class="text-sm font-black text-slate-800">适合人群</h3>
+                            <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">${course.suitable}</p>
+                        </div>
+
+                        <div class="mt-8">
+                            <h3 class="text-lg font-black text-slate-800 mb-4">课程模块</h3>
+                            <div class="space-y-3">
+                                ${course.sections.map((section, idx) => `
+                                    <div class="bg-white px-5 py-4 rounded-[1.5rem] border border-slate-100 shadow-sm flex items-center gap-4">
+                                        <div class="w-9 h-9 rounded-2xl bg-[#2563eb] text-white flex items-center justify-center font-black text-sm">${idx + 1}</div>
+                                        <div class="flex-1">
+                                            <h4 class="text-sm font-bold text-slate-800">${section}</h4>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ${renderFixedActionBar(`
+                    <div class="bg-white p-6 pb-10 border-t flex justify-between items-center">
+                        <span class="text-2xl font-black ${course.price === 0 ? 'text-emerald-500' : 'text-slate-900'}">${course.price === 0 ? '免费' : '¥' + course.price}</span>
+                        <button onclick="showConfirmModal('课程确认', '确认查看「${course.title}」吗？', function() { showToast('已加入学习 🎉'); })" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">查看课程</button>
+                    </div>
+                `)}
+            `, { showNav: false });
+        }
+
+        function renderJobs() {
+            const filterType = STATE.jobFilter;
+            const filteredJobs = filterType === 'all'
+                ? MOCK_DATA.jobs
+                : MOCK_DATA.jobs.filter(job => job.type === filterType);
+
+            setView(`
+                <div class="h-12"></div>
+                <header class="px-6 mb-6">
+                    <h2 class="text-2xl font-black text-slate-900">名企职位</h2>
+                    <div class="mt-4 flex gap-2" id="job-filters">
+                        <span onclick="filterJobs('all')" class="cursor-pointer ${filterType === 'all' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'bg-white text-slate-400 border border-slate-100'} px-4 py-1.5 rounded-full text-xs font-bold" data-type="all">全部</span>
+                        <span onclick="filterJobs('全职')" class="cursor-pointer ${filterType === '全职' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'bg-white text-slate-400 border border-slate-100'} px-4 py-1.5 rounded-full text-xs font-bold" data-type="全职">全职</span>
+                        <span onclick="filterJobs('实习')" class="cursor-pointer ${filterType === '实习' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'bg-white text-slate-400 border border-slate-100'} px-4 py-1.5 rounded-full text-xs font-bold" data-type="实习">实习</span>
+                        <span onclick="filterJobs('管培生')" class="cursor-pointer ${filterType === '管培生' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'bg-white text-slate-400 border border-slate-100'} px-4 py-1.5 rounded-full text-xs font-bold" data-type="管培生">管培生</span>
+                    </div>
+                </header>
+
+                <div class="px-6 space-y-4">
+                    ${filteredJobs.map(job => renderJobCard(job)).join('')}
+                    ${filteredJobs.length === 0 ? '<div class="text-center text-slate-400 text-sm py-16 font-bold">暂无匹配的职位</div>' : ''}
+                </div>
+            `, { showNav: true, activeTab: 'jobs' });
+        }
+
+        function renderJobDetail(id) {
+            const job = MOCK_DATA.jobs.find(j => j.id === id);
+            setView(`
+                ${renderFloatingBackButton("renderJobs()")}
+                <div class="bg-white min-h-screen page-animate pb-32">
+                    <div class="h-60 detail-hero bg-slate-50">
+                        <img src="${job.image}" class="w-full h-full object-cover">
+                    </div>
+
+                    <div class="detail-panel px-6 py-8 bg-white rounded-t-[3rem] shadow-2xl">
+                        <div class="flex justify-between items-start gap-4">
+                            <div>
+                                <h1 class="text-2xl font-black text-slate-900 leading-tight">${job.title}</h1>
+                                <p class="text-xs text-blue-600 font-bold mt-2">${job.company}</p>
+                            </div>
+                            <span class="text-sm font-black text-orange-500 whitespace-nowrap">${job.salary}</span>
+                        </div>
+                        <div class="flex gap-2 mt-4 flex-wrap">
+                            ${job.tags.map(tag => `<span class="bg-slate-50 text-slate-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">${tag}</span>`).join('')}
+                        </div>
+
+                        <div class="mt-8 bg-blue-50/60 rounded-[1.6rem] p-5 border border-blue-100">
+                            <h3 class="text-sm font-black text-slate-800">企业介绍</h3>
+                            <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">${job.companyIntro}</p>
+                        </div>
+
+                        <div class="mt-8">
+                            <h3 class="text-lg font-black text-slate-800 mb-4">岗位职责</h3>
+                            <div class="space-y-3">
+                                ${job.responsibilities.map(item => `
+                                    <div class="bg-white px-5 py-4 rounded-[1.5rem] border border-slate-100 shadow-sm flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                            <i class="fa-solid fa-check"></i>
+                                        </div>
+                                        <p class="text-[12px] text-slate-500 leading-relaxed flex-1">${item}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <h3 class="text-lg font-black text-slate-800 mb-4">任职要求</h3>
+                            <div class="flex flex-wrap gap-2">
+                                ${job.requirements.map(item => `
+                                    <span class="bg-blue-50 text-blue-600 text-[11px] px-3 py-2 rounded-full font-bold">${item}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ${renderFixedActionBar(`
+                    <div class="bg-white p-6 pb-10 border-t flex justify-between items-center">
+                        <span class="text-xs text-slate-400 font-bold">${job.city} · 刚刚更新</span>
+                        <button onclick="showConfirmModal('投递确认', '确认投递「${job.title}」至 ${job.company} 吗？', function() { showToast('投递成功 🎉'); })" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">立即投递</button>
+                    </div>
+                `)}
+            `, { showNav: false });
+        }
+
+        function renderMine() {
+            setView(`
+                <div class="pt-20 px-8 pb-10 bg-gradient-to-b from-blue-50/50 to-white">
+                    <div class="flex flex-col items-center">
+                        <div class="w-24 h-24 rounded-[2.5rem] bg-white shadow-xl p-1 relative">
+                            <div class="w-full h-full rounded-[2.4rem] overflow-hidden border-4 border-white bg-[#2563eb] flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-blue-100">
+                                ${MOCK_DATA.user.name.slice(0, 1)}
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-[#2563eb] rounded-2xl border-4 border-white flex items-center justify-center text-white text-[10px]">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
+                        </div>
+                        <h2 class="text-xl font-black text-slate-800 mt-5">${MOCK_DATA.user.name}</h2>
+                        <p class="text-xs text-slate-400 font-bold mt-1">${MOCK_DATA.user.school} · ${MOCK_DATA.user.major}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 px-8 mt-4">
+                    <div class="bg-white p-5 rounded-[2rem] border border-slate-50 shadow-sm flex items-center gap-3 btn-press">
+                        <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                            <i class="fa-solid fa-ticket-simple"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-slate-800">3 张</p>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase">我的票券</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-[2rem] border border-slate-50 shadow-sm flex items-center gap-3 btn-press">
+                        <div class="w-10 h-10 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-slate-800">18 项</p>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase">收藏内容</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-8 mt-10 space-y-3">
+                    <div onclick="renderRoutes()" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
+                        <span class="text-xs font-bold text-slate-700">参访行程</span>
+                        <i class="fa-solid fa-chevron-right text-slate-100 text-[10px]"></i>
+                    </div>
+                    <div onclick="renderCourses()" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
+                        <span class="text-xs font-bold text-slate-700">已购课程</span>
+                        <i class="fa-solid fa-chevron-right text-slate-100 text-[10px]"></i>
+                    </div>
+                    <div onclick="switchTab('jobs')" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
+                        <span class="text-xs font-bold text-slate-700">简历投递记录</span>
+                        <i class="fa-solid fa-chevron-right text-slate-100 text-[10px]"></i>
+                    </div>
+                    <div onclick="switchTab('community')" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
+                        <span class="text-xs font-bold text-slate-700">我的社区</span>
+                        <i class="fa-solid fa-chevron-right text-slate-100 text-[10px]"></i>
+                    </div>
+                    <div onclick="renderSettings()" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
+                        <span class="text-xs font-bold text-slate-700">设置</span>
+                        <i class="fa-solid fa-chevron-right text-slate-100 text-[10px]"></i>
+                    </div>
+                </div>
+            `, { showNav: true, activeTab: 'mine' });
+        }
+
+
+        // ============ 新增交互功能 ============
+
+        function showModal(title, bodyHtml) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-black text-slate-900">${title}</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 btn-press">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    ${bodyHtml}
+                </div>
+            `;
+            document.getElementById('app').appendChild(modal);
+        }
+
+        function showConfirmModal(title, message, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-circle-question"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-black text-slate-900">${title}</h3>
+                            <p class="text-xs text-slate-400 font-bold mt-0.5">${message}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="this.closest('.modal-overlay').remove()" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold btn-press">取消</button>
+                        <button onclick="this.closest('.modal-overlay').remove(); setTimeout(${onConfirm.toString()}, 100)" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">确认</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('app').appendChild(modal);
+        }
+
+        function renderSearch() {
+            const allItems = [
+                ...MOCK_DATA.activities.map(a => ({ type: '路线', title: a.title, sub: a.city + ' · ' + a.date, action: `renderDetail(${a.id}, 'home')` })),
+                ...MOCK_DATA.courses.map(c => ({ type: '课程', title: c.title, sub: c.teacher, action: `renderCourseDetail(${c.id}, 'home')` })),
+                ...MOCK_DATA.jobs.map(j => ({ type: '职位', title: j.title, sub: j.company + ' · ' + j.city, action: `renderJobDetail(${j.id})` })),
+                ...MOCK_DATA.posts.map(p => ({ type: '帖子', title: p.content.slice(0, 40) + (p.content.length > 40 ? '...' : ''), sub: p.author + ' · ' + p.time, action: `renderPostDetail(${p.id})` }))
+            ];
+
+            let filtered = allItems;
+            let filterType = 'all';
+
+            function renderSearchResults() {
+                const list = document.getElementById('search-results');
+                const results = filtered.filter(item => filterType === 'all' || item.type === filterType);
+                if (results.length === 0) {
+                    list.innerHTML = '<div class="text-center text-slate-400 text-sm py-12 font-bold">未找到相关内容</div>';
+                    return;
+                }
+                list.innerHTML = results.map(item => `
+                    <div class="search-result-item" onclick="document.getElementById('search-page').remove(); ${item.action}">
+                        <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-black shrink-0">${item.type}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-bold text-slate-800 truncate">${item.title}</div>
+                            <div class="text-[11px] text-slate-400 font-bold mt-0.5">${item.sub}</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-200 text-xs"></i>
+                    </div>
+                `).join('');
+            }
+
+            setView(`
+                <div class="modal-full" id="search-page">
+                    <div class="px-6 pt-14 pb-4">
+                        <div class="flex items-center gap-3 mb-6">
+                            <button onclick="switchTab(STATE.currentTab)" class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 btn-press shrink-0">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <h2 class="text-xl font-black text-slate-900">搜索</h2>
+                        </div>
+                        <input type="text" class="search-input" id="search-input" placeholder="搜索路线、课程、职位、帖子..." autofocus>
+                        <div class="flex gap-2 mt-4 overflow-x-auto hide-scrollbar" id="search-type-filters">
+                            <button onclick="filterType='all'; renderSearchResults()" class="search-tag active" data-type="all">全部</button>
+                            <button onclick="filterType='路线'; renderSearchResults()" class="search-tag" data-type="路线">路线</button>
+                            <button onclick="filterType='课程'; renderSearchResults()" class="search-tag" data-type="课程">课程</button>
+                            <button onclick="filterType='职位'; renderSearchResults()" class="search-tag" data-type="职位">职位</button>
+                            <button onclick="filterType='帖子'; renderSearchResults()" class="search-tag" data-type="帖子">帖子</button>
+                        </div>
+                    </div>
+                    <div class="px-6 pb-8" id="search-results"></div>
+                </div>
+            `, { showNav: false, activeTab: STATE.currentTab });
+
+            const input = document.getElementById('search-input');
+            input.addEventListener('input', function() {
+                const q = this.value.toLowerCase().trim();
+                filtered = q ? allItems.filter(item =>
+                    item.title.toLowerCase().includes(q) || item.sub.toLowerCase().includes(q)
+                ) : allItems;
+                renderSearchResults();
+            });
+            renderSearchResults();
+        }
+
+        function showPostMenu(postId) {
+            showModal('操作', `
+                <div class="space-y-1">
+                    <div class="post-menu-btn" onclick="this.closest('.modal-overlay').remove(); showToast('已举报该帖子')">
+                        <i class="fa-solid fa-flag"></i>
+                        <span>举报</span>
+                    </div>
+                    <div class="post-menu-btn" onclick="this.closest('.modal-overlay').remove(); showToast('已复制分享链接')">
+                        <i class="fa-solid fa-link"></i>
+                        <span>复制链接</span>
+                    </div>
+                </div>
+            `);
+        }
+
+        function renderSettings() {
+            setView(`
+                ${renderSubHeader('设置', '个人信息与偏好设置', "switchTab('mine')")}
+                <div class="px-6 mt-6">
+                    <div class="bg-white rounded-[2rem] p-6 border border-slate-50 shadow-sm">
+                        <h4 class="text-sm font-black text-slate-800 mb-2">个人信息</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase block mb-1.5">昵称</label>
+                                <input type="text" value="${MOCK_DATA.user.name}" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-none outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase block mb-1.5">学校</label>
+                                <input type="text" value="${MOCK_DATA.user.school}" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-none outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase block mb-1.5">专业</label>
+                                <input type="text" value="${MOCK_DATA.user.major}" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-none outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-[2rem] p-6 border border-slate-50 shadow-sm mt-4">
+                        <h4 class="text-sm font-black text-slate-800 mb-2">通知偏好</h4>
+                        <div class="settings-item">
+                            <span class="text-sm font-bold text-slate-700">新路线通知</span>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="settings-item">
+                            <span class="text-sm font-bold text-slate-700">新职位提醒</span>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="settings-item">
+                            <span class="text-sm font-bold text-slate-700">社区互动通知</span>
+                            <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-[2rem] p-6 border border-slate-50 shadow-sm mt-4">
+                        <h4 class="text-sm font-black text-slate-800 mb-2">关于</h4>
+                        <div class="settings-item">
+                            <span class="text-sm font-bold text-slate-700">版本</span>
+                            <span class="text-xs font-bold text-slate-400">v2.1.84</span>
+                        </div>
+                    </div>
+
+                    <button onclick="showToast('设置已保存')" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-base mt-6 shadow-xl shadow-blue-100 btn-press">
+                        保存设置
+                    </button>
+                </div>
+            `, { showNav: false });
+        }
+
+        function filterJobs(type) {
+            STATE.jobFilter = type;
+            renderJobs();
+        }
+        window.onload = () => switchTab('home');
+    </script>
+</body>
+</html>
