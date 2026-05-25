@@ -572,6 +572,23 @@
 
     <script>
         const MOCK_DATA = {
+            // 用户简历（默认简历）
+            resumes: [
+                {
+                    id: 'default',
+                    name: '陈小希',
+                    school: '华南理工大学',
+                    major: '计算机工程',
+                    phone: '13812345678',
+                    email: 'chenxiaoxi@example.com'
+                }
+            ],
+            // 报名记录
+            registrations: [],
+            // 投递记录
+            applications: [],
+            // 课程加入记录
+            enrollments: [],
             activities: [
                 {
                     id: 101,
@@ -698,6 +715,7 @@
                     likes: 23,
                     comments: 8,
                     liked: false,
+                    isMine: false,
                     commentsList: [
                         { author: '刘同学', avatar: '刘', content: '太赞了！感谢分享', time: '1小时前' },
                         { author: '赵同学', avatar: '赵', content: '我也参加了，确实收获很大', time: '2小时前' }
@@ -714,6 +732,7 @@
                     likes: 12,
                     comments: 15,
                     liked: true,
+                    isMine: false,
                     commentsList: [
                         { author: '孙同学', avatar: '孙', content: '求组队联系方式', time: '3小时前' }
                     ]
@@ -729,6 +748,7 @@
                     likes: 56,
                     comments: 23,
                     liked: false,
+                    isMine: false,
                     commentsList: []
                 },
                 {
@@ -742,6 +762,7 @@
                     likes: 34,
                     comments: 11,
                     liked: false,
+                    isMine: false,
                     commentsList: []
                 }
             ],
@@ -906,7 +927,10 @@
                     <div class="post-header">
                         <div class="avatar-small">${post.avatar}</div>
                         <div class="post-meta">
-                            <div class="post-author">${post.author}</div>
+                            <div class="post-author">
+                                ${post.author}
+                                ${post.isMine ? '<span class="ml-2 text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">我</span>' : ''}
+                            </div>
                             <div class="post-time">${post.time}</div>
                         </div>
                         <span class="post-tag">${post.tags[0]}</span>
@@ -1077,8 +1101,16 @@
 
         function showCreatePostModal() {
             const tags = ['参访分享', '面试经验', '课程评价', '组队'];
+            const presetImages = [
+                './demo-enhanced-assets/route-bay.jpg',
+                './demo-enhanced-assets/course-ai.jpg',
+                './demo-enhanced-assets/job-algorithm.jpg',
+                './demo-enhanced-assets/job-pr.jpg',
+                './demo-enhanced-assets/course-interview.jpg'
+            ];
             const modal = document.createElement('div');
             modal.className = 'modal-overlay';
+            modal.id = 'create-post-modal';
             modal.innerHTML = `
                 <div class="modal-content">
                     <div class="flex justify-between items-center mb-6">
@@ -1088,6 +1120,16 @@
                         </button>
                     </div>
                     <textarea class="create-post-textarea mb-4" id="create-post-content" placeholder="分享你的产学研故事..."></textarea>
+                    <div class="mb-4">
+                        <p class="text-xs font-bold text-slate-500 mb-3">选择配图（可选，最多3张）</p>
+                        <div class="flex gap-2 flex-wrap" id="image-selector">
+                            ${presetImages.map((img, idx) => `
+                                <div class="w-16 h-16 rounded-xl overflow-hidden cursor-pointer border-2 border-transparent transition-all image-select-item" data-img="${img}" onclick="toggleImageSelect(this, '${img}')">
+                                    <img src="${img}" class="w-full h-full object-cover">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                     <div class="mb-6">
                         <p class="text-xs font-bold text-slate-500 mb-3">选择话题标签</p>
                         <div class="flex gap-2 flex-wrap" id="create-post-tags">
@@ -1101,6 +1143,28 @@
             `;
             document.getElementById('app').appendChild(modal);
             setTimeout(() => document.getElementById('create-post-content').focus(), 300);
+        }
+
+        // 配图选择相关变量
+        window._selectedImages = [];
+
+        function toggleImageSelect(el, img) {
+            const container = document.getElementById('image-selector');
+            if (el.classList.contains('border-transparent')) {
+                // 选中
+                if (window._selectedImages.length >= 3) {
+                    showToast('最多选择3张图片');
+                    return;
+                }
+                el.classList.remove('border-transparent');
+                el.classList.add('border-blue-500');
+                window._selectedImages.push(img);
+            } else {
+                // 取消选中
+                el.classList.remove('border-blue-500');
+                el.classList.add('border-transparent');
+                window._selectedImages = window._selectedImages.filter(i => i !== img);
+            }
         }
 
         function toggleCreateTag(btn) {
@@ -1125,14 +1189,16 @@
                 avatar: MOCK_DATA.user.name.slice(0, 1),
                 time: '刚刚',
                 content: content,
-                images: [],
+                images: [...window._selectedImages],
                 tags: selectedTags,
                 likes: 0,
                 comments: 0,
                 liked: false,
+                isMine: true,
                 commentsList: []
             };
             MOCK_DATA.posts.unshift(newPost);
+            window._selectedImages = [];
             document.querySelector('.modal-overlay').remove();
             showToast('发布成功 🎉');
             if (STATE.currentTab === 'community') renderCommunity();
@@ -1141,11 +1207,13 @@
         // ============ 原有函数保持不变 ============
 
         function renderActivityCard(act, source = 'home') {
+            const isRegistered = MOCK_DATA.registrations.some(r => r.activityId === act.id);
             return `
-                <div onclick="renderDetail(${act.id}, '${source}')" class="${source === 'home' ? 'min-w-[280px]' : 'w-full'} bg-white rounded-[2rem] overflow-hidden card-shadow btn-press border border-slate-50">
+                <div onclick="${isRegistered ? `renderDetail(${act.id}, '${source}')` : `renderDetail(${act.id}, '${source}')`}" class="${source === 'home' ? 'min-w-[280px]' : 'w-full'} bg-white rounded-[2rem] overflow-hidden card-shadow btn-press border border-slate-50">
                     <div class="h-40 relative">
                         <img src="${act.image}" class="w-full h-full object-cover">
                         <span class="absolute top-3 left-3 bg-white/90 backdrop-blur text-[10px] font-black px-2 py-1 rounded-lg text-blue-600 shadow-sm">${act.tag}</span>
+                        ${isRegistered ? `<span class="absolute top-3 right-3 bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-1 rounded-lg">已报名</span>` : ''}
                     </div>
                     <div class="p-5">
                         <h4 class="font-black text-slate-900 leading-tight">${act.title}</h4>
@@ -1163,12 +1231,14 @@
         }
 
         function renderCourseCard(course, source = 'home') {
+            const isEnrolled = MOCK_DATA.enrollments.some(e => e.courseId === course.id);
             return `
                 <div onclick="renderCourseDetail(${course.id}, '${source}')" class="bg-white p-3 rounded-[1.5rem] flex items-center gap-4 card-shadow border border-slate-50 btn-press">
                     <img src="${course.image}" class="w-16 h-16 rounded-xl object-cover">
                     <div class="flex-1">
                         <h4 class="text-sm font-bold text-slate-800 leading-snug">${course.title}</h4>
                         <p class="text-[10px] text-slate-400 font-bold mt-1">${course.teacher}</p>
+                        ${isEnrolled ? `<span class="text-[10px] font-black text-blue-600 mt-1 inline-block">已加入</span>` : ''}
                     </div>
                     <div class="text-right">
                         <span class="text-sm font-black ${course.price === 0 ? 'text-emerald-500' : 'text-slate-900'}">
@@ -1180,6 +1250,7 @@
         }
 
         function renderJobCard(job) {
+            const isApplied = MOCK_DATA.applications.some(a => a.jobId === job.id);
             return `
                 <div onclick="renderJobDetail(${job.id})" class="bg-white p-6 rounded-[2rem] border border-slate-50 card-shadow btn-press">
                     <div class="flex justify-between items-start gap-4">
@@ -1188,7 +1259,10 @@
                             <p class="text-xs text-blue-600 font-bold mt-1">${job.company}</p>
                             <p class="text-[11px] text-slate-400 leading-relaxed mt-2">${job.summary}</p>
                         </div>
-                        <span class="text-sm font-black text-orange-500 whitespace-nowrap">${job.salary}</span>
+                        <div class="text-right">
+                            <span class="text-sm font-black text-orange-500 whitespace-nowrap">${job.salary}</span>
+                            ${isApplied ? `<span class="block mt-2 bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-1 rounded-lg">已投递</span>` : ''}
+                        </div>
                     </div>
                     <div class="flex gap-2 mt-4 flex-wrap">
                         ${job.tags.map(t => `<span class="bg-slate-50 text-slate-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">${t}</span>`).join('')}
@@ -1317,7 +1391,7 @@
                 ${renderFixedActionBar(`
                     <div class="bg-white p-6 pb-10 border-t flex justify-between items-center">
                         <span class="text-2xl font-black text-slate-900">¥${act.price}</span>
-                        <button onclick="showConfirmModal('报名确认', '确认报名「${act.title}」吗？', function() { showToast('报名成功 🎉'); })" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">立即报名</button>
+                        <button onclick="showRegistrationModal(${act.id})" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">立即报名</button>
                     </div>
                 `)}
             `, { showNav: false });
@@ -1367,7 +1441,7 @@
                 ${renderFixedActionBar(`
                     <div class="bg-white p-6 pb-10 border-t flex justify-between items-center">
                         <span class="text-2xl font-black ${course.price === 0 ? 'text-emerald-500' : 'text-slate-900'}">${course.price === 0 ? '免费' : '¥' + course.price}</span>
-                        <button onclick="showConfirmModal('课程确认', '确认查看「${course.title}」吗？', function() { showToast('已加入学习 🎉'); })" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">查看课程</button>
+                        <button onclick="showEnrollmentModal(${course.id})" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">查看课程</button>
                     </div>
                 `)}
             `, { showNav: false });
@@ -1451,13 +1525,15 @@
                 ${renderFixedActionBar(`
                     <div class="bg-white p-6 pb-10 border-t flex justify-between items-center">
                         <span class="text-xs text-slate-400 font-bold">${job.city} · 刚刚更新</span>
-                        <button onclick="showConfirmModal('投递确认', '确认投递「${job.title}」至 ${job.company} 吗？', function() { showToast('投递成功 🎉'); })" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">立即投递</button>
+                        <button onclick="showApplicationModal(${job.id})" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-xl shadow-blue-100 btn-press">立即投递</button>
                     </div>
                 `)}
             `, { showNav: false });
         }
 
         function renderMine() {
+            const ticketCount = MOCK_DATA.registrations.length;
+            const favoriteCount = 18; // 收藏数（暂用固定值）
             setView(`
                 <div class="pt-20 px-8 pb-10 bg-gradient-to-b from-blue-50/50 to-white">
                     <div class="flex flex-col items-center">
@@ -1475,12 +1551,12 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 px-8 mt-4">
-                    <div class="bg-white p-5 rounded-[2rem] border border-slate-50 shadow-sm flex items-center gap-3 btn-press">
+                    <div onclick="renderMyRegistrations()" class="bg-white p-5 rounded-[2rem] border border-slate-50 shadow-sm flex items-center gap-3 btn-press">
                         <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
                             <i class="fa-solid fa-ticket-simple"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-black text-slate-800">3 张</p>
+                            <p class="text-xs font-black text-slate-800">${ticketCount} 张</p>
                             <p class="text-[9px] text-slate-400 font-bold uppercase">我的票券</p>
                         </div>
                     </div>
@@ -1489,26 +1565,26 @@
                             <i class="fa-solid fa-star"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-black text-slate-800">18 项</p>
+                            <p class="text-xs font-black text-slate-800">${favoriteCount} 项</p>
                             <p class="text-[9px] text-slate-400 font-bold uppercase">收藏内容</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="px-8 mt-10 space-y-3">
-                    <div onclick="renderRoutes()" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
+                    <div onclick="renderMyRegistrations()" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
                         <span class="text-xs font-bold text-slate-700">参访行程</span>
                         <i class="fa-solid fa-chevron-right text-slate-100 text-[10px]"></i>
                     </div>
-                    <div onclick="renderCourses()" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
+                    <div onclick="renderMyCourses()" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
                         <span class="text-xs font-bold text-slate-700">已购课程</span>
                         <i class="fa-solid fa-chevron-right text-slate-100 text-[10px]"></i>
                     </div>
-                    <div onclick="switchTab('jobs')" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
+                    <div onclick="renderMyApplications()" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
                         <span class="text-xs font-bold text-slate-700">简历投递记录</span>
                         <i class="fa-solid fa-chevron-right text-slate-100 text-[10px]"></i>
                     </div>
-                    <div onclick="switchTab('community')" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
+                    <div onclick="renderMyPosts()" class="bg-white px-6 py-5 rounded-[1.8rem] border border-slate-50 flex justify-between items-center btn-press shadow-sm">
                         <span class="text-xs font-bold text-slate-700">我的社区</span>
                         <i class="fa-solid fa-chevron-right text-slate-100 text-[10px]"></i>
                     </div>
@@ -1522,6 +1598,428 @@
 
 
         // ============ 新增交互功能 ============
+
+        // ========== 报名参访流程 ==========
+        function showRegistrationModal(activityId) {
+            const act = MOCK_DATA.activities.find(a => a.id === activityId);
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-black text-slate-900">报名参访</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 btn-press">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="mb-6 bg-blue-50 rounded-2xl p-4">
+                        <p class="text-sm font-black text-slate-800">${act.title}</p>
+                        <p class="text-xs text-slate-400 font-bold mt-1"><i class="fa-solid fa-calendar mr-1"></i>${act.date} · ${act.city}</p>
+                    </div>
+                    <div class="space-y-5">
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 mb-3">出行方式 <span class="text-red-500">*</span></p>
+                            <div class="flex gap-3">
+                                <button onclick="selectTransport(this, '自行前往')" class="transport-btn flex-1 py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-500 transition-all">自行前往</button>
+                                <button onclick="selectTransport(this, '集合点集合')" class="transport-btn flex-1 py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-500 transition-all">集合点集合</button>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 mb-3">参与人数 <span class="text-red-500">*</span></p>
+                            <div class="flex gap-3">
+                                <button onclick="selectParticipants(this, 1)" class="participant-btn w-12 h-12 rounded-2xl border-2 border-blue-500 bg-blue-50 text-blue-600 font-black text-sm transition-all">1</button>
+                                <button onclick="selectParticipants(this, 2)" class="participant-btn w-12 h-12 rounded-2xl border-2 border-slate-100 text-slate-500 font-black text-sm transition-all">2</button>
+                                <button onclick="selectParticipants(this, 3)" class="participant-btn w-12 h-12 rounded-2xl border-2 border-slate-100 text-slate-500 font-black text-sm transition-all">3</button>
+                                <button onclick="selectParticipants(this, 4)" class="participant-btn w-12 h-12 rounded-2xl border-2 border-slate-100 text-slate-500 font-black text-sm transition-all">4</button>
+                                <button onclick="selectParticipants(this, 5)" class="participant-btn w-12 h-12 rounded-2xl border-2 border-slate-100 text-slate-500 font-black text-sm transition-all">5</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 mb-2 block">联系电话 <span class="text-red-500">*</span></label>
+                            <input type="tel" id="reg-phone" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-2 border-transparent outline-none focus:border-blue-500 transition-all" placeholder="请输入手机号码" value="13812345678">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 mb-2 block">备注留言</label>
+                            <textarea id="reg-note" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-2 border-transparent outline-none focus:border-blue-500 transition-all resize-none" rows="2" placeholder="选填，可备注特殊需求"></textarea>
+                        </div>
+                    </div>
+                    <button onclick="submitRegistration(${activityId})" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-base mt-6 shadow-xl shadow-blue-100 btn-press">确认报名</button>
+                </div>
+            `;
+            document.getElementById('app').appendChild(modal);
+        }
+
+        let _selectedTransport = '自行前往';
+        let _selectedParticipants = 1;
+
+        function selectTransport(btn, value) {
+            document.querySelectorAll('.transport-btn').forEach(b => {
+                b.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600');
+                b.classList.add('border-slate-100', 'text-slate-500');
+            });
+            btn.classList.remove('border-slate-100', 'text-slate-500');
+            btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-600');
+            _selectedTransport = value;
+        }
+
+        function selectParticipants(btn, count) {
+            document.querySelectorAll('.participant-btn').forEach(b => {
+                b.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600');
+                b.classList.add('border-slate-100', 'text-slate-500');
+            });
+            btn.classList.remove('border-slate-100', 'text-slate-500');
+            btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-600');
+            _selectedParticipants = count;
+        }
+
+        function submitRegistration(activityId) {
+            const phone = document.getElementById('reg-phone').value.trim();
+            const note = document.getElementById('reg-note').value.trim();
+            const act = MOCK_DATA.activities.find(a => a.id === activityId);
+
+            if (!phone) {
+                showToast('请输入联系电话');
+                return;
+            }
+            if (!/^1[3-9]\d{9}$/.test(phone)) {
+                showToast('请输入有效的手机号码');
+                return;
+            }
+
+            const registration = {
+                id: Date.now(),
+                activityId: activityId,
+                activityTitle: act.title,
+                date: act.date,
+                city: act.city,
+                transport: _selectedTransport,
+                participants: _selectedParticipants,
+                phone: phone,
+                note: note,
+                status: '已报名',
+                createdAt: new Date().toISOString()
+            };
+            MOCK_DATA.registrations.push(registration);
+            document.querySelector('.modal-overlay').remove();
+            showToast('报名成功 🎉');
+
+            // 刷新当前页面
+            if (STATE.currentTab === 'home') renderHome();
+        }
+
+        // ========== 职位投递流程 ==========
+        function showApplicationModal(jobId) {
+            const job = MOCK_DATA.jobs.find(j => j.id === jobId);
+            const defaultResume = MOCK_DATA.resumes.find(r => r.id === 'default');
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'application-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-black text-slate-900">投递简历</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 btn-press">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="mb-6 bg-blue-50 rounded-2xl p-4">
+                        <p class="text-sm font-black text-slate-800">${job.title}</p>
+                        <p class="text-xs text-blue-600 font-bold mt-1">${job.company} · ${job.city}</p>
+                    </div>
+                    <div class="mb-5">
+                        <p class="text-xs font-bold text-slate-500 mb-3">选择简历</p>
+                        <div id="resume-list" class="space-y-3">
+                            <div class="resume-item p-4 rounded-2xl border-2 border-blue-500 bg-blue-50 cursor-pointer" onclick="selectResume(this, 'default')">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-black">${defaultResume.name.slice(0, 1)}</div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold text-slate-800">${defaultResume.name}（默认）</p>
+                                        <p class="text-[10px] text-slate-400 font-bold">${defaultResume.school} · ${defaultResume.major}</p>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-blue-500"></i>
+                                </div>
+                            </div>
+                            <div class="resume-item p-4 rounded-2xl border-2 border-slate-100 cursor-pointer" onclick="showNewResumeForm()">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold text-slate-500">新建简历</p>
+                                        <p class="text-[10px] text-slate-400 font-bold">完善更多个人信息</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="new-resume-form" class="mt-4 space-y-4 hidden">
+                            <input type="text" id="new-resume-name" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-2 border-transparent outline-none focus:border-blue-500" placeholder="姓名">
+                            <input type="text" id="new-resume-school" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-2 border-transparent outline-none focus:border-blue-500" placeholder="学校">
+                            <input type="text" id="new-resume-major" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-2 border-transparent outline-none focus:border-blue-500" placeholder="专业">
+                            <input type="tel" id="new-resume-phone" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-2 border-transparent outline-none focus:border-blue-500" placeholder="手机号码">
+                            <input type="email" id="new-resume-email" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-2 border-transparent outline-none focus:border-blue-500" placeholder="邮箱">
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="text-xs font-bold text-slate-500 mb-2 block">自我评价</label>
+                        <textarea id="app-self-intro" class="w-full bg-slate-50 rounded-2xl px-4 py-3 text-sm font-bold text-slate-800 border-2 border-transparent outline-none focus:border-blue-500 resize-none" rows="3" placeholder="简单介绍你的优势..."></textarea>
+                    </div>
+                    <button onclick="submitApplication(${jobId})" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-base shadow-xl shadow-blue-100 btn-press">确认投递</button>
+                </div>
+            `;
+            document.getElementById('app').appendChild(modal);
+        }
+
+        let _selectedResumeId = 'default';
+
+        function selectResume(btn, resumeId) {
+            document.querySelectorAll('.resume-item').forEach(item => {
+                item.classList.remove('border-blue-500', 'bg-blue-50');
+                item.classList.add('border-slate-100');
+            });
+            btn.classList.remove('border-slate-100');
+            btn.classList.add('border-blue-500', 'bg-blue-50');
+            _selectedResumeId = resumeId;
+            // 隐藏新建表单
+            const form = document.getElementById('new-resume-form');
+            if (form) form.classList.add('hidden');
+        }
+
+        function showNewResumeForm() {
+            const form = document.getElementById('new-resume-form');
+            form.classList.remove('hidden');
+            document.querySelectorAll('.resume-item').forEach(item => {
+                item.classList.remove('border-blue-500', 'bg-blue-50');
+                item.classList.add('border-slate-100');
+            });
+            _selectedResumeId = 'new';
+        }
+
+        function submitApplication(jobId) {
+            const job = MOCK_DATA.jobs.find(j => j.id === jobId);
+            const selfIntro = document.getElementById('app-self-intro').value.trim();
+            let resume;
+
+            if (_selectedResumeId === 'new') {
+                const name = document.getElementById('new-resume-name').value.trim();
+                const school = document.getElementById('new-resume-school').value.trim();
+                const major = document.getElementById('new-resume-major').value.trim();
+                const phone = document.getElementById('new-resume-phone').value.trim();
+                const email = document.getElementById('new-resume-email').value.trim();
+
+                if (!name || !school || !major || !phone || !email) {
+                    showToast('请完善简历信息');
+                    return;
+                }
+                if (!/^1[3-9]\d{9}$/.test(phone)) {
+                    showToast('请输入有效的手机号码');
+                    return;
+                }
+                if (!email.includes('@')) {
+                    showToast('请输入有效的邮箱');
+                    return;
+                }
+                resume = { name, school, major, phone, email };
+            } else {
+                resume = MOCK_DATA.resumes.find(r => r.id === _selectedResumeId);
+            }
+
+            const application = {
+                id: Date.now(),
+                jobId: jobId,
+                jobTitle: job.title,
+                company: job.company,
+                city: job.city,
+                salary: job.salary,
+                resume: resume,
+                selfIntro: selfIntro,
+                status: '已投递',
+                createdAt: new Date().toISOString()
+            };
+            MOCK_DATA.applications.push(application);
+            document.querySelector('.modal-overlay').remove();
+            showToast('投递成功 🎉');
+
+            if (STATE.currentTab === 'jobs') renderJobs();
+        }
+
+        // ========== 课程加入流程 ==========
+        function showEnrollmentModal(courseId) {
+            const course = MOCK_DATA.courses.find(c => c.id === courseId);
+            const isEnrolled = MOCK_DATA.enrollments.some(e => e.courseId === courseId);
+
+            if (isEnrolled) {
+                showToast('您已加入该课程');
+                return;
+            }
+
+            if (course.price > 0) {
+                showConfirmModal('课程确认', `确认购买「${course.title}」吗？`, function() {
+                    doEnrollCourse(courseId);
+                });
+            } else {
+                doEnrollCourse(courseId);
+            }
+        }
+
+        function doEnrollCourse(courseId) {
+            const course = MOCK_DATA.courses.find(c => c.id === courseId);
+            const enrollment = {
+                id: Date.now(),
+                courseId: courseId,
+                courseTitle: course.title,
+                teacher: course.teacher,
+                image: course.image,
+                progress: 0,
+                enrolledAt: new Date().toISOString()
+            };
+            MOCK_DATA.enrollments.push(enrollment);
+            showToast('已加入学习 🎉');
+
+            // 刷新当前页面
+            if (STATE.currentTab === 'home') renderHome();
+        }
+
+        // ========== 发帖增强 ==========
+        function deletePost(postId) {
+            const idx = MOCK_DATA.posts.findIndex(p => p.id === postId);
+            if (idx !== -1) {
+                MOCK_DATA.posts.splice(idx, 1);
+                showToast('帖子已删除');
+                renderCommunity();
+            }
+        }
+
+        // ========== "我的"页面数据看板 ==========
+        function renderMyRegistrations() {
+            const regs = MOCK_DATA.registrations;
+            setView(`
+                ${renderSubHeader('我的报名', '参访行程记录', "switchTab('mine')")}
+                <div class="px-6 mt-6">
+                    ${regs.length === 0 ? `
+                        <div class="text-center py-16">
+                            <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-ticket-simple text-3xl text-slate-300"></i>
+                            </div>
+                            <p class="text-sm text-slate-400 font-bold">暂无报名记录</p>
+                            <p class="text-xs text-slate-300 font-bold mt-1">去首页看看有什么好路线吧</p>
+                        </div>
+                    ` : `
+                        <div class="space-y-4">
+                            ${regs.map(reg => `
+                                <div class="bg-white p-5 rounded-[1.8rem] border border-slate-50 shadow-sm">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+                                            <i class="fa-solid fa-route text-xl"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-sm font-black text-slate-800">${reg.activityTitle}</h4>
+                                            <p class="text-[11px] text-slate-400 font-bold mt-1">
+                                                <i class="fa-solid fa-calendar mr-1"></i>${reg.date} · ${reg.city}
+                                            </p>
+                                            <p class="text-[11px] text-slate-400 font-bold mt-0.5">
+                                                <i class="fa-solid fa-person mr-1"></i>${reg.participants}人 · ${reg.transport}
+                                            </p>
+                                        </div>
+                                        <span class="bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-1 rounded-lg">${reg.status}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+            `, { showNav: false });
+        }
+
+        function renderMyApplications() {
+            const apps = MOCK_DATA.applications;
+            setView(`
+                ${renderSubHeader('投递记录', '职位投递历史', "switchTab('mine')")}
+                <div class="px-6 mt-6">
+                    ${apps.length === 0 ? `
+                        <div class="text-center py-16">
+                            <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-paper-plane text-3xl text-slate-300"></i>
+                            </div>
+                            <p class="text-sm text-slate-400 font-bold">暂无投递记录</p>
+                            <p class="text-xs text-slate-300 font-bold mt-1">去职位页看看有什么好机会吧</p>
+                        </div>
+                    ` : `
+                        <div class="space-y-4">
+                            ${apps.map(app => `
+                                <div class="bg-white p-5 rounded-[1.8rem] border border-slate-50 shadow-sm">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500">
+                                            <i class="fa-solid fa-briefcase text-xl"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-sm font-black text-slate-800">${app.jobTitle}</h4>
+                                            <p class="text-[11px] text-blue-600 font-bold mt-1">${app.company}</p>
+                                            <p class="text-[11px] text-slate-400 font-bold mt-0.5">${app.city} · ${app.salary}</p>
+                                        </div>
+                                        <span class="bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-1 rounded-lg">${app.status}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+            `, { showNav: false });
+        }
+
+        function renderMyCourses() {
+            const courses = MOCK_DATA.enrollments;
+            setView(`
+                ${renderSubHeader('已购课程', '我的学习记录', "switchTab('mine')")}
+                <div class="px-6 mt-6">
+                    ${courses.length === 0 ? `
+                        <div class="text-center py-16">
+                            <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-graduation-cap text-3xl text-slate-300"></i>
+                            </div>
+                            <p class="text-sm text-slate-400 font-bold">暂无已购课程</p>
+                            <p class="text-xs text-slate-300 font-bold mt-1">去首页看看有什么好课程吧</p>
+                        </div>
+                    ` : `
+                        <div class="space-y-4">
+                            ${courses.map(c => `
+                                <div class="bg-white p-4 rounded-[1.8rem] border border-slate-50 shadow-sm flex items-center gap-4">
+                                    <img src="${c.image}" class="w-16 h-16 rounded-xl object-cover">
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-bold text-slate-800">${c.courseTitle}</h4>
+                                        <p class="text-[10px] text-slate-400 font-bold mt-1">${c.teacher}</p>
+                                        <div class="mt-2 bg-slate-50 rounded-full h-1.5 w-full">
+                                            <div class="bg-blue-500 rounded-full h-1.5" style="width: ${c.progress}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+            `, { showNav: false });
+        }
+
+        function renderMyPosts() {
+            const myPosts = MOCK_DATA.posts.filter(p => p.isMine);
+            setView(`
+                ${renderSubHeader('我的社区', '我发布的帖子', "switchTab('mine')")}
+                <div class="px-6 mt-6">
+                    ${myPosts.length === 0 ? `
+                        <div class="text-center py-16">
+                            <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-comments text-3xl text-slate-300"></i>
+                            </div>
+                            <p class="text-sm text-slate-400 font-bold">暂无发布的帖子</p>
+                            <p class="text-xs text-slate-300 font-bold mt-1">去社区分享你的故事吧</p>
+                        </div>
+                    ` : `
+                        <div class="space-y-4">
+                            ${myPosts.map(post => renderPostCard(post)).join('')}
+                        </div>
+                    `}
+                </div>
+            `, { showNav: false });
+        }
 
         function showModal(title, bodyHtml) {
             const modal = document.createElement('div');
@@ -1627,12 +2125,21 @@
         }
 
         function showPostMenu(postId) {
+            const post = MOCK_DATA.posts.find(p => p.id === postId);
+            const isMine = post && post.isMine;
             showModal('操作', `
                 <div class="space-y-1">
+                    ${isMine ? `
+                    <div class="post-menu-btn danger" onclick="this.closest('.modal-overlay').remove(); deletePost(${postId})">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>删除</span>
+                    </div>
+                    ` : `
                     <div class="post-menu-btn" onclick="this.closest('.modal-overlay').remove(); showToast('已举报该帖子')">
                         <i class="fa-solid fa-flag"></i>
                         <span>举报</span>
                     </div>
+                    `}
                     <div class="post-menu-btn" onclick="this.closest('.modal-overlay').remove(); showToast('已复制分享链接')">
                         <i class="fa-solid fa-link"></i>
                         <span>复制链接</span>
